@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storm Observatory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  background:#0c0c10;
+  font-family:'Inter',sans-serif;
+  color:#fff;
+  height:100%;
+  overflow:hidden;
+}
+
+/* Vortex background */
+.bg-vortex{
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(221,34,0,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,136,0,0.04) 0%, transparent 40%),
+    radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,119,221,0.03) 0%, transparent 60%);
+}
+
+/* Concentric rings */
+.ring{
+  position:fixed;
+  top:50%;left:50%;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,0.03);
+  transform:translate(-50%,-50%);
+  pointer-events:none;z-index:0;
+}
+.ring:nth-child(1){width:300px;height:300px;border-color:rgba(221,34,0,0.08);}
+.ring:nth-child(2){width:550px;height:550px;border-color:rgba(255,136,0,0.06);}
+.ring:nth-child(3){width:800px;height:800px;border-color:rgba(204,221,0,0.04);}
+.ring:nth-child(4){width:1100px;height:1100px;border-color:rgba(68,204,0,0.03);}
+.ring:nth-child(5){width:1400px;height:1400px;border-color:rgba(0,119,221,0.03);}
+
+/* Typhoon cloud canvas */
+#typhoonCanvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:1;
+}
+
+/* ============ HERO TITLE ============ */
+.hero{
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  z-index:5;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.hero-tag{
+  font-size:10px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(255,255,255,0.25);
+  margin-bottom:24px;
+  transition:opacity 0.6s, transform 0.6s;
+}
+.hero-title{
+  font-size:clamp(60px,13vw,150px);
+  font-weight:900;
+  letter-spacing:-4px;
+  line-height:0.9;
+  text-align:center;
+  background:linear-gradient(180deg,#dd2200,#ff8800,#ccdd00);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  transition:opacity 0.8s, transform 0.8s;
+}
+.hero-sub{
+  font-size:clamp(12px,1.5vw,16px);font-weight:300;
+  color:rgba(255,255,255,0.3);
+  max-width:500px;text-align:center;
+  line-height:1.8;
+  margin-top:20px;
+  transition:opacity 0.6s 0.1s, transform 0.6s 0.1s;
+}
+.hero-scroll{
+  margin-top:40px;
+  font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,0.2);
+  animation:breathe 3s ease-in-out infinite;
+  transition:opacity 0.4s;
+}
+@keyframes breathe{
+  0%,100%{opacity:0.15;}
+  50%{opacity:0.5;}
+}
+
+/* Hidden state */
+.hero.dispersed{opacity:0;transform:scale(0.95);pointer-events:none;}
+.hero{transition:opacity 0.8s, transform 0.8s;}
+
+/* ============ PANELS ============ */
+.scene{
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  z-index:3;
+  perspective:1200px;
+}
+.panel{
+  position:absolute;
+  top:0;left:0;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1), filter 0.8s;
+  opacity:0;
+  filter:blur(8px);
+  pointer-events:none;
+  will-change:transform,opacity;
+}
+.panel.active{
+  opacity:1;
+  filter:blur(0);
+  pointer-events:auto;
+  transform:translateZ(0) scale(1);
+}
+
+.panel-content{
+  max-width:800px;
+  width:90%;
+  padding:40px;
+}
+
+/* --- Summary --- */
+.summary-panel .panel-content{text-align:center;}
+.sum-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,136,0,0.5);margin-bottom:20px;font-weight:600;}
+.sum-title{font-size:28px;font-weight:600;letter-spacing:-1px;margin-bottom:24px;color:rgba(255,255,255,0.85);}
+.sum-body{font-size:13px;font-weight:300;color:rgba(255,255,255,0.35);line-height:2;max-width:650px;margin:0 auto 36px;}
+.sum-body strong{color:rgba(255,255,255,0.6);font-weight:500;}
+.sum-stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;}
+.sum-stat{text-align:center;}
+.sum-stat strong{display:block;font-size:28px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:4px;font-variant-numeric:tabular-nums;letter-spacing:-1px;}
+.sum-stat span{font-size:9px;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.5px;}
+
+/* --- Classification --- */
+.class-panel .panel-content{max-width:900px;}
+.cls-label{text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(204,221,0,0.5);margin-bottom:20px;font-weight:600;}
+.cls-title{text-align:center;font-size:24px;font-weight:600;letter-spacing:-0.5px;margin-bottom:12px;color:rgba(255,255,255,0.85);}
+.cls-intro{text-align:center;font-size:12px;font-weight:300;color:rgba(255,255,255,0.3);line-height:1.8;max-width:600px;margin:0 auto 36px;}
+.cls-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+@media(max-width:700px){.cls-grid{grid-template-columns:1fr;}}
+.cls-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:20px 24px;position:relative;overflow:hidden;}
+.cls-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c);}
+.cls-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.cls-abbr{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--c);background:color-mix(in srgb, var(--c) 12%, transparent);padding:2px 8px;border-radius:2px;}
+.cls-name{font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);}
+.cls-desc{font-size:10px;color:rgba(255,255,255,0.3);line-height:1.8;font-weight:300;}
+.cls-desc strong{color:rgba(255,255,255,0.5);font-weight:500;}
+.cls-wind{display:inline-block;margin-top:6px;font-size:9px;letter-spacing:0.5px;color:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.05);padding:2px 7px;font-variant-numeric:tabular-nums;}
+
+/* --- Reading Data --- */
+.data-panel .panel-content{max-width:920px;}
+.dat-label{text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(238,51,0,0.5);margin-bottom:20px;font-weight:600;}
+.dat-title{text-align:center;font-size:24px;font-weight:600;letter-spacing:-0.5px;margin-bottom:12px;color:rgba(255,255,255,0.85);}
+.dat-intro{text-align:center;font-size:12px;font-weight:300;color:rgba(255,255,255,0.3);line-height:1.8;max-width:620px;margin:0 auto 32px;}
+.dat-tooltip-mock{max-width:260px;margin:0 auto 36px;background:rgba(12,12,16,0.92);border:1px solid rgba(255,255,255,0.12);padding:16px 20px;font-size:11px;backdrop-filter:blur(12px);border-radius:3px;position:relative;}
+.dat-tooltip-mock::after{content:'From the simulation tooltip';position:absolute;top:-20px;left:0;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.15);}
+.dtm-id{color:#dd2200;font-size:16px;font-weight:700;margin-bottom:10px;letter-spacing:1px;}
+.dtm-row{display:flex;justify-content:space-between;padding:3px 0;font-size:10px;color:rgba(255,255,255,0.35);}
+.dtm-row span{color:rgba(255,255,255,0.8);font-weight:400;text-align:right;}
+.dtm-cat{display:inline-block;margin-top:8px;padding:2px 7px;border-radius:2px;font-size:9px;font-weight:700;letter-spacing:0.5px;background:rgba(204,221,0,0.15);color:#ccdd00;}
+.dat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media(max-width:700px){.dat-grid{grid-template-columns:1fr;}}
+.dat-field{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:18px 20px;position:relative;overflow:hidden;}
+.dat-field::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--fc);}
+.dat-field-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.dat-field-name{font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);letter-spacing:0.3px;}
+.dat-field-example{font-size:9px;font-weight:400;color:var(--fc);background:color-mix(in srgb, var(--fc) 10%, transparent);padding:1px 6px;border-radius:2px;font-variant-numeric:tabular-nums;}
+.dat-field-desc{font-size:10px;color:rgba(255,255,255,0.3);line-height:1.8;font-weight:300;}
+.dat-field-desc strong{color:rgba(255,255,255,0.5);font-weight:500;}
+.dat-connect{margin-top:28px;padding:20px 24px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden;}
+.dat-connect::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(221,34,0,0.3),rgba(255,136,0,0.2),rgba(204,221,0,0.2),rgba(0,119,221,0.3),transparent);}
+.dat-connect-title{font-size:11px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:10px;letter-spacing:0.3px;}
+.dat-connect-body{font-size:10px;color:rgba(255,255,255,0.3);line-height:2;font-weight:300;}
+.dat-connect-body strong{color:rgba(255,255,255,0.55);font-weight:500;}
+
+/* --- Simulations --- */
+.sim-panel .panel-content{max-width:900px;}
+.sim-label{text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(0,119,221,0.5);margin-bottom:20px;font-weight:600;}
+.sim-title{text-align:center;font-size:24px;font-weight:600;letter-spacing:-0.5px;margin-bottom:32px;color:rgba(255,255,255,0.85);}
+.sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:800px){.sim-grid{grid-template-columns:1fr;}}
+.sim-card{position:relative;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);padding:28px 24px;text-decoration:none;color:inherit;display:block;overflow:hidden;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);}
+.sim-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity 0.4s;}
+.sim-card:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.15);transform:translateY(-4px);}
+.sim-card:hover::before{opacity:1;}
+.sim-card:hover .sim-arrow{transform:translate(3px,-3px);opacity:1;}
+.sim-icon{font-size:20px;margin-bottom:20px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px;transition:transform 0.4s;}
+.sim-card:hover .sim-icon{transform:scale(1.1);}
+.sim-card-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;font-weight:500;}
+.sim-card-title{font-size:18px;font-weight:600;margin-bottom:8px;letter-spacing:-0.5px;}
+.sim-card-desc{font-size:11px;font-weight:300;color:rgba(255,255,255,0.35);line-height:1.7;margin-bottom:16px;}
+.sim-card-stats{display:flex;gap:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);}
+.sim-card-stat{font-size:9px;color:rgba(255,255,255,0.25);}
+.sim-card-stat strong{display:block;font-size:16px;font-weight:600;color:rgba(255,255,255,0.75);margin-bottom:2px;font-variant-numeric:tabular-nums;}
+.sim-arrow{position:absolute;top:24px;right:24px;font-size:14px;color:rgba(255,255,255,0.15);transition:all 0.4s;opacity:0.4;}
+
+/* Selectable cards — hover highlight */
+.cls-card,.dat-field,.dat-connect,.dat-tooltip-mock{
+  cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.cls-card:hover,.dat-field:hover,.dat-connect:hover,.dat-tooltip-mock:hover{
+  background:rgba(255,255,255,0.06);
+  border-color:rgba(255,255,255,0.18);
+  transform:translateY(-2px);
+  box-shadow:0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+/* Zoom modal */
+.zoom-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:100;
+  background:transparent;
+  backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.zoom-overlay.open{opacity:1;pointer-events:auto;}
+.zoom-card{
+  max-width:860px;width:92%;
+  background:rgba(20,20,26,0.95);
+  border:1px solid rgba(255,255,255,0.12);
+  padding:56px 64px;
+  position:relative;
+  transform:scale(0.9) translateY(20px);
+  transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.zoom-overlay.open .zoom-card{transform:scale(1) translateY(0);}
+.zoom-close{
+  position:absolute;top:16px;right:20px;
+  background:none;border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.4);font-size:11px;letter-spacing:1px;
+  padding:4px 12px;cursor:pointer;text-transform:uppercase;
+  transition:all 0.3s;
+}
+.zoom-close:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);}
+.zoom-body{font-size:20px;color:rgba(255,255,255,0.75);line-height:2;font-weight:300;}
+.zoom-body strong{color:rgba(255,255,255,0.95);font-weight:600;}
+.zoom-body .zoom-title{font-size:30px;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:20px;letter-spacing:-0.5px;}
+.zoom-body .zoom-subtitle{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--zc,#ff8800);margin-bottom:14px;font-weight:600;display:block;}
+.zoom-body .zoom-meta{display:inline-block;margin-top:16px;font-size:14px;letter-spacing:0.5px;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.06);padding:5px 14px;}
+
+/* Nav dots */
+.nav{position:fixed;right:32px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:12px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:transparent;cursor:pointer;transition:all 0.4s;padding:0;}
+.nav-dot:hover{border-color:rgba(255,255,255,0.4);}
+.nav-dot.active{background:#ff8800;border-color:#ff8800;box-shadow:0 0 8px rgba(255,136,0,0.4);}
+
+/* Status bar */
+.status-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:16px;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:0.5px;}
+.status-dot{width:5px;height:5px;border-radius:50%;background:#ff8800;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:0.3;transform:scale(1);}50%{opacity:1;transform:scale(1.4);}}
+</style>
+</head>
+<body>
+
+<div class="bg-vortex"></div>
+<div class="ring"></div>
+<div class="ring"></div>
+<div class="ring"></div>
+<div class="ring"></div>
+<div class="ring"></div>
+<canvas id="typhoonCanvas"></canvas>
+
+<!-- ========== HERO TITLE ========== -->
+<div class="hero" id="hero">
+  <div class="hero-tag">Data Observatory v1.0</div>
+  <div class="hero-title">STORM<br>TRACKING</div>
+  <p class="hero-sub">Explore 73 years of typhoon data on a 3D globe. See where storms hit, how strong they were, and how they moved across the Philippines and Vietnam.</p>
+  <div class="hero-scroll">Scroll to explore</div>
+</div>
+
+<!-- ========== CONTENT PANELS ========== -->
+<div class="scene" id="scene">
+
+  <!-- Panel 0: Summary -->
+  <div class="panel summary-panel" data-idx="0">
+    <div class="panel-content">
+      <div class="sum-label">About This Dataset</div>
+      <div class="sum-title">73 Years of Cyclone Activity</div>
+      <p class="sum-body">All data comes from Japan's weather agency (<strong>JMA</strong>), which has tracked every storm in the Western Pacific since 1951. Each record shows a storm's <strong>path</strong>, <strong>wind speed</strong>, and <strong>pressure</strong> as it moved through the <strong>Philippines</strong> or <strong>Vietnam</strong> &mdash; two of the most typhoon-hit countries on Earth, seeing around <strong>20+ storms per year</strong> combined.</p>
+      <div class="sum-stats">
+        <div class="sum-stat"><strong>1,313</strong><span>Storm records</span></div>
+        <div class="sum-stat"><strong>1951&ndash;2023</strong><span>Period covered</span></div>
+        <div class="sum-stat"><strong>885 hPa</strong><span>Lowest pressure</span></div>
+        <div class="sum-stat"><strong>120 kt</strong><span>Highest wind</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 1: Classification -->
+  <div class="panel class-panel" data-idx="1">
+    <div class="panel-content">
+      <div class="cls-label">Classification</div>
+      <div class="cls-title">Storm Classification Guide</div>
+      <p class="cls-intro">Storms are sorted into 4 levels based on how fast their winds blow. Stronger winds = higher category = more damage.</p>
+      <div class="cls-grid">
+        <div class="cls-card" style="--c:#0077dd;">
+          <div class="cls-row"><span class="cls-abbr">TD</span><span class="cls-name">Tropical Depression</span></div>
+          <div class="cls-desc">The weakest type. A swirling cluster of clouds with <strong>light winds</strong>. Not very windy, but can still bring <strong>heavy rain and flooding</strong>.</div>
+          <span class="cls-wind">&lt; 34 knots (&lt; 63 km/h)</span>
+        </div>
+        <div class="cls-card" style="--c:#ccdd00;">
+          <div class="cls-row"><span class="cls-abbr">TS</span><span class="cls-name">Tropical Storm</span></div>
+          <div class="cls-desc">Strong enough to get an <strong>official name</strong>. Winds can <strong>damage light buildings</strong>, knock out power, and push seawater inland. Expect heavy rain.</div>
+          <span class="cls-wind">34&ndash;47 knots (63&ndash;88 km/h)</span>
+        </div>
+        <div class="cls-card" style="--c:#ff8800;">
+          <div class="cls-row"><span class="cls-abbr">STS</span><span class="cls-name">Severe Tropical Storm</span></div>
+          <div class="cls-desc">Dangerously strong. Winds can <strong>rip off roofs and uproot trees</strong>. Coastal areas usually get evacuation orders. Flooding becomes life-threatening.</div>
+          <span class="cls-wind">48&ndash;63 knots (89&ndash;117 km/h)</span>
+        </div>
+        <div class="cls-card" style="--c:#dd2200;">
+          <div class="cls-row"><span class="cls-abbr">TY</span><span class="cls-name">Typhoon</span></div>
+          <div class="cls-desc">The most powerful. Has a visible <strong>eye</strong> at its center. Winds can <strong>flatten buildings</strong> and push the ocean far inland. The strongest storm in our data hit <strong>120 kt winds</strong>.</div>
+          <span class="cls-wind">&ge; 64 knots (&ge; 118 km/h)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 2: Reading the Data -->
+  <div class="panel data-panel" data-idx="2">
+    <div class="panel-content">
+      <div class="dat-label">Understanding the Data</div>
+      <div class="dat-title">Reading a Storm Record</div>
+      <div class="dat-intro">Hover over any storm in the simulation and you'll see a card like this. Here's what each number means.</div>
+      <div class="dat-tooltip-mock">
+        <div class="dtm-id">5212</div>
+        <div class="dtm-row">Country <span>Philippines</span></div>
+        <div class="dtm-row">Year <span>1952</span></div>
+        <div class="dtm-row">Month <span>9</span></div>
+        <div class="dtm-row">Grade <span>Tropical Cyclone of TS intensity or higher</span></div>
+        <div class="dtm-row">Pressure <span>985 hPa</span></div>
+        <div class="dtm-row">Max Wind <span style="color:rgba(0,119,221,0.7);">N/A</span></div>
+        <div class="dtm-row">Track Points <span>8</span></div>
+        <div class="dtm-cat">TS</div>
+      </div>
+      <div class="dat-grid">
+        <div class="dat-field" style="--fc:#dd2200;">
+          <div class="dat-field-head"><span class="dat-field-name">Storm ID</span><span class="dat-field-example">5212</span></div>
+          <div class="dat-field-desc">Each storm gets a number. The first two digits are the <strong>year</strong> (52 = 1952) and the last two tell you it was the <strong>12th storm</strong> that year.</div>
+        </div>
+        <div class="dat-field" style="--fc:#ff8800;">
+          <div class="dat-field-head"><span class="dat-field-name">Pressure (hPa)</span><span class="dat-field-example">985 hPa</span></div>
+          <div class="dat-field-desc">Think of this as the storm's power gauge. <strong>Lower number = stronger storm.</strong> Normal air pressure is around 1010. The most powerful typhoon in our data dropped to <strong>885</strong> &mdash; that's an extremely intense storm.</div>
+        </div>
+        <div class="dat-field" style="--fc:#ccdd00;">
+          <div class="dat-field-head"><span class="dat-field-name">Max Wind (knots)</span><span class="dat-field-example">120 kt</span></div>
+          <div class="dat-field-desc">The fastest winds measured in the storm. This is what decides the storm's <strong>category</strong> (TD, TS, STS, or TY). Higher wind = more destruction. Doubling the wind speed makes it <strong>8 times more destructive</strong>.</div>
+        </div>
+        <div class="dat-field" style="--fc:#44cc00;">
+          <div class="dat-field-head"><span class="dat-field-name">Track Points</span><span class="dat-field-example">8 points</span></div>
+          <div class="dat-field-desc">Each point is a location recorded <strong>every 6 hours</strong> as the storm moves. More points = the storm lasted longer. <strong>8 points &asymp; 2 days</strong>, 30+ points means it raged for over a week across more areas.</div>
+        </div>
+        <div class="dat-field" style="--fc:#0077dd;">
+          <div class="dat-field-head"><span class="dat-field-name">Grade / Classification</span><span class="dat-field-example">TS</span></div>
+          <div class="dat-field-desc">The storm's level based on wind speed. Goes from <strong>TD</strong> (weak) to <strong>TS</strong> to <strong>STS</strong> up to <strong>TY</strong> (typhoon &mdash; the strongest). This decides whether people need to evacuate.</div>
+        </div>
+        <div class="dat-field" style="--fc:#ff8800;">
+          <div class="dat-field-head"><span class="dat-field-name">Country &amp; Timing</span><span class="dat-field-example">PH &middot; Sep 1952</span></div>
+          <div class="dat-field-desc">Which country the storm hit and when. Most typhoons happen between <strong>July and November</strong>. Storms during rainy season are worse because the ground is already soaked, causing more <strong>floods and landslides</strong>.</div>
+        </div>
+      </div>
+      <div class="dat-connect">
+        <div class="dat-connect-title">How These Factors Create a Disaster</div>
+        <div class="dat-connect-body">When pressure drops, wind speeds go up &mdash; they're directly connected. Strong winds cause <strong>three main dangers</strong>: they <strong>destroy buildings</strong>, they <strong>push the ocean inland</strong> (storm surge &mdash; the #1 killer), and they bring <strong>extreme rainfall and flooding</strong>. A storm's total damage depends on how strong it is, how long it lasts, and whether it hits a populated area. The worst disasters happen when a powerful, slow-moving typhoon <strong>hits a crowded coast during high tide</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 3: Simulations -->
+  <div class="panel sim-panel" data-idx="3">
+    <div class="panel-content">
+      <div class="sim-label">Simulations</div>
+      <div class="sim-title">Launch a Simulation</div>
+      <div class="sim-grid">
+        <a href="typhoon_simulation.html" class="sim-card" style="--accent:#dd2200;">
+          <div class="sim-arrow">&nearr;</div>
+          <div class="sim-icon" style="color:#dd2200;">&#x1F300;</div>
+          <div class="sim-card-label">Simulation 01</div>
+          <div class="sim-card-title">Typhoon Tracker</div>
+          <div class="sim-card-desc">3D globe visualization of typhoon tracks across the Philippines and Vietnam from 1951 to 2023.</div>
+          <div class="sim-card-stats">
+            <div class="sim-card-stat"><strong>1,313</strong>records</div>
+            <div class="sim-card-stat"><strong>73</strong>years</div>
+            <div class="sim-card-stat"><strong>2</strong>countries</div>
+          </div>
+        </a>
+        <a href="typhoon_simulation.html?country=PH" class="sim-card" style="--accent:#ee3300;">
+          <div class="sim-arrow">&nearr;</div>
+          <div class="sim-icon" style="color:#ee3300;">&#x1F1F5;&#x1F1ED;</div>
+          <div class="sim-card-label">Comparison</div>
+          <div class="sim-card-title">Philippines</div>
+          <div class="sim-card-desc">The most typhoon-hit country on Earth. Sits right in the main storm path with over 20 landfalls per year on average.</div>
+          <div class="sim-card-stats">
+            <div class="sim-card-stat"><strong>~800</strong>storms</div>
+            <div class="sim-card-stat"><strong>Peak</strong>Jul–Nov</div>
+          </div>
+        </a>
+        <a href="typhoon_simulation.html?country=VN" class="sim-card" style="--accent:#44cc00;">
+          <div class="sim-arrow">&nearr;</div>
+          <div class="sim-icon" style="color:#44cc00;">&#x1F1FB;&#x1F1F3;</div>
+          <div class="sim-card-label">Comparison</div>
+          <div class="sim-card-title">Vietnam</div>
+          <div class="sim-card-desc">Storms weaken crossing the South China Sea but still cause massive flooding along Vietnam's long, narrow coastline.</div>
+          <div class="sim-card-stats">
+            <div class="sim-card-stat"><strong>~500</strong>storms</div>
+            <div class="sim-card-stat"><strong>Peak</strong>Sep–Nov</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Zoom modal -->
+<div class="zoom-overlay" id="zoomOverlay">
+  <div class="zoom-card">
+    <button class="zoom-close" id="zoomClose">Close</button>
+    <div class="zoom-body" id="zoomBody"></div>
+  </div>
+</div>
+
+<nav class="nav" id="nav"></nav>
+
+<div class="status-bar">
+  <div class="status-dot"></div>
+  <span>System operational</span>
+  <span>&middot;</span>
+  <span>JMA Best Track Database</span>
+  <span>&middot;</span>
+  <span>Last updated 2023</span>
+</div>
+
+<script>
+(function(){
+  // ====== TYPHOON CLOUD CANVAS ======
+  const canvas = document.getElementById('typhoonCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, cx, cy;
+  let mouseX = -9999, mouseY = -9999;
+  const REPEL_RADIUS = 120;
+  const REPEL_STRENGTH = 80;
+
+  canvas.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+  canvas.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    cx = W / 2;
+    cy = H / 2;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Cloud particles — spiral bands like satellite typhoon imagery
+  const PARTICLE_COUNT = 250;
+  const clouds = [];
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    // Distribute across spiral arms
+    const armAngle = Math.random() * Math.PI * 2;
+    const radius = 30 + Math.random() * Math.max(W, H) * 0.65;
+    // Spiral offset — further out = more angular offset (logarithmic spiral)
+    const spiralTwist = Math.log(radius + 1) * 0.8;
+
+    clouds.push({
+      angle: armAngle + spiralTwist,
+      radius: radius,
+      // Orbital speed — inner particles move faster (Kepler-like)
+      speed: (0.0003 + Math.random() * 0.0006) / (1 + radius * 0.001),
+      // Radial drift — slight inward/outward wobble
+      radialDrift: (Math.random() - 0.5) * 0.15,
+      baseRadius: radius,
+      // Size — larger near the eyewall, wisps further out
+      size: radius < 120 ? 1 + Math.random() * 2 :
+            radius < 300 ? 2 + Math.random() * 5 :
+            1 + Math.random() * 4,
+      // Opacity — denser near the eye
+      opacity: radius < 150 ? 0.15 + Math.random() * 0.25 :
+               radius < 400 ? 0.08 + Math.random() * 0.15 :
+               0.03 + Math.random() * 0.08,
+      // Color band — infrared palette based on distance
+      color: radius < 100 ? [180, 30, 10] :    // dark red core
+             radius < 200 ? [221, 34, 0] :      // red eyewall
+             radius < 350 ? [255, 136, 0] :     // orange bands
+             radius < 500 ? [204, 200, 0] :     // yellow-green
+             radius < 650 ? [68, 180, 0] :      // green outer
+             [0, 100, 200],                       // blue fringe
+      // Slight wobble for organic feel
+      wobbleAmp: 2 + Math.random() * 8,
+      wobbleSpeed: 0.5 + Math.random() * 2,
+      wobblePhase: Math.random() * Math.PI * 2,
+      // Trail length for streaky cloud effect
+      trail: radius < 200 ? 0.04 : 0.02 + Math.random() * 0.03,
+    });
+  }
+
+  let t = 0;
+
+  function drawClouds() {
+    // Fade trail — creates the streaky cloud band look
+    ctx.fillStyle = 'rgba(12,12,16,0.12)';
+    ctx.fillRect(0, 0, W, H);
+
+    t += 1;
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const c = clouds[i];
+
+      // Update angle (orbit)
+      c.angle += c.speed;
+
+      // Radial breathing — wobble in and out
+      const wobble = Math.sin(t * 0.01 * c.wobbleSpeed + c.wobblePhase) * c.wobbleAmp;
+      const r = c.baseRadius + wobble + Math.sin(t * 0.002 + i) * c.radialDrift * 20;
+
+      // Position
+      let x = cx + Math.cos(c.angle) * r;
+      let y = cy + Math.sin(c.angle) * r;
+
+      // Repel from cursor
+      const mdx = x - mouseX, mdy = y - mouseY;
+      const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mDist < REPEL_RADIUS && mDist > 0) {
+        const force = (1 - mDist / REPEL_RADIUS) * REPEL_STRENGTH;
+        x += (mdx / mDist) * force;
+        y += (mdy / mDist) * force;
+      }
+
+      // Fade out particles near center so text stays readable
+      const dx = x - cx, dy = y - cy;
+      const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+      const clearZone = Math.min(W, H) * 0.28;
+      const fadeZone = Math.min(W, H) * 0.15;
+      const centerFade = distFromCenter < clearZone ? 0 :
+                         distFromCenter < clearZone + fadeZone ?
+                         (distFromCenter - clearZone) / fadeZone : 1;
+      const drawOpacity = c.opacity * centerFade;
+
+      if (drawOpacity < 0.005) continue; // skip invisible particles
+
+      // Draw cloud particle
+      const [cr, cg, cb] = c.color;
+      ctx.beginPath();
+      ctx.arc(x, y, c.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},${drawOpacity})`;
+      ctx.fill();
+
+      // For larger particles, add a soft glow
+      if (c.size > 3) {
+        ctx.beginPath();
+        ctx.arc(x, y, c.size * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${cr},${cg},${cb},${drawOpacity * 0.15})`;
+        ctx.fill();
+      }
+    }
+
+    requestAnimationFrame(drawClouds);
+  }
+  drawClouds();
+
+  // ====== STATE ======
+  const hero = document.getElementById('hero');
+  const panels = document.querySelectorAll('.panel');
+  const navEl = document.getElementById('nav');
+  const panelNames = ['Title', 'Dataset', 'Classification', 'Reading the Data', 'Simulations'];
+  let current = -1;
+  let transitioning = false;
+
+  // Build nav dots
+  for (let i = 0; i < panelNames.length; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.title = panelNames[i];
+    dot.addEventListener('click', () => goTo(i - 1));
+    navEl.appendChild(dot);
+  }
+
+  function updateNav() {
+    const dots = navEl.querySelectorAll('.nav-dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === current + 1));
+  }
+
+  // ====== PANEL TRANSITIONS ======
+  function showPanel(idx) {
+    panels.forEach((p, i) => {
+      if (i === idx) {
+        p.classList.add('active');
+        p.style.transform = 'translateZ(0) scale(1)';
+      } else {
+        p.classList.remove('active');
+        const diff = i - idx;
+        p.style.transform = `translateZ(${diff * 300}px) scale(0.85)`;
+      }
+    });
+  }
+
+  function hideAllPanels() {
+    panels.forEach(p => {
+      p.classList.remove('active');
+      p.style.transform = 'translateZ(400px) scale(0.85)';
+    });
+  }
+
+  function goTo(idx) {
+    if (idx === current || transitioning) return;
+    if (idx < -1) idx = -1;
+    if (idx >= panels.length) return;
+    transitioning = true;
+
+    if (idx === -1) {
+      hideAllPanels();
+      hero.classList.remove('dispersed');
+    } else {
+      if (current === -1) hero.classList.add('dispersed');
+      showPanel(idx);
+    }
+
+    current = idx;
+    updateNav();
+    setTimeout(() => { transitioning = false; }, 800);
+  }
+
+  hideAllPanels();
+
+  // ====== SCROLL ======
+  let scrollAccum = 0;
+  const SCROLL_THRESHOLD = 60;
+  window.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    scrollAccum += e.deltaY;
+    if (Math.abs(scrollAccum) > SCROLL_THRESHOLD) {
+      if (scrollAccum > 0) goTo(current + 1);
+      else goTo(current - 1);
+      scrollAccum = 0;
+    }
+  }, { passive: false });
+
+  // Touch
+  let touchStartY = 0;
+  window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+  window.addEventListener('touchend', (e) => {
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 50) {
+      if (dy > 0) goTo(current + 1);
+      else goTo(current - 1);
+    }
+  });
+
+  // Keyboard
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') goTo(current + 1);
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') goTo(current - 1);
+  });
+
+  // ====== RING ANIMATION ======
+  const rings = document.querySelectorAll('.ring');
+  let ringTime = 0;
+  function animateRings() {
+    ringTime += 0.002;
+    rings.forEach((ring, i) => {
+      const r = ringTime * (i + 1) * 8;
+      ring.style.transform = `translate(-50%,-50%) rotate(${r}deg)`;
+    });
+    requestAnimationFrame(animateRings);
+  }
+  animateRings();
+
+  // ====== ZOOM MODAL ======
+  const zoomOverlay = document.getElementById('zoomOverlay');
+  const zoomBody = document.getElementById('zoomBody');
+  const zoomClose = document.getElementById('zoomClose');
+
+  function openZoom(title, subtitle, color, content, meta) {
+    let html = '';
+    if (subtitle) html += `<span class="zoom-subtitle" style="--zc:${color}">${subtitle}</span>`;
+    if (title) html += `<div class="zoom-title">${title}</div>`;
+    html += `<div>${content}</div>`;
+    if (meta) html += `<span class="zoom-meta">${meta}</span>`;
+    zoomBody.innerHTML = html;
+    zoomOverlay.classList.add('open');
+  }
+
+  function closeZoom() { zoomOverlay.classList.remove('open'); }
+  zoomClose.addEventListener('click', closeZoom);
+  zoomOverlay.addEventListener('click', (e) => { if (e.target === zoomOverlay) closeZoom(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeZoom(); });
+
+  // Classification cards
+  document.querySelectorAll('.cls-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const abbr = card.querySelector('.cls-abbr').textContent;
+      const name = card.querySelector('.cls-name').textContent;
+      const desc = card.querySelector('.cls-desc').innerHTML;
+      const wind = card.querySelector('.cls-wind').textContent;
+      const color = getComputedStyle(card).getPropertyValue('--c').trim();
+      openZoom(name, 'Classification', color, desc, wind);
+    });
+  });
+
+  // Data field cards
+  document.querySelectorAll('.dat-field').forEach(card => {
+    card.addEventListener('click', () => {
+      const name = card.querySelector('.dat-field-name').textContent;
+      const example = card.querySelector('.dat-field-example').textContent;
+      const desc = card.querySelector('.dat-field-desc').innerHTML;
+      const color = getComputedStyle(card).getPropertyValue('--fc').trim();
+      openZoom(name, 'Data Field', color, desc, 'Example: ' + example);
+    });
+  });
+
+  // Disaster connect box
+  const datConnect = document.querySelector('.dat-connect');
+  if (datConnect) {
+    datConnect.addEventListener('click', () => {
+      const title = datConnect.querySelector('.dat-connect-title').textContent;
+      const body = datConnect.querySelector('.dat-connect-body').innerHTML;
+      openZoom(title, 'Understanding', '#dd2200', body);
+    });
+  }
+
+  // Tooltip mock
+  const tooltipMock = document.querySelector('.dat-tooltip-mock');
+  if (tooltipMock) {
+    tooltipMock.addEventListener('click', () => {
+      openZoom('Sample Storm Record', 'Tooltip Preview', '#dd2200',
+        tooltipMock.innerHTML);
+    });
+  }
+})();
+</script>
+</body>
+</html>
