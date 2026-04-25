@@ -145,6 +145,28 @@ html,body{
 .sum-stat strong{display:block;font-size:28px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:4px;font-variant-numeric:tabular-nums;letter-spacing:-1px;}
 .sum-stat span{font-size:9px;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.5px;}
 
+/* --- Why These Countries --- */
+.why-panel .panel-content{max-width:860px;text-align:center;}
+.why-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(221,34,0,0.5);margin-bottom:20px;font-weight:600;}
+.why-title{font-size:24px;font-weight:600;letter-spacing:-0.5px;margin-bottom:12px;color:rgba(255,255,255,0.85);}
+.why-intro{font-size:13px;font-weight:300;color:rgba(255,255,255,0.35);line-height:2;max-width:650px;margin:0 auto 32px;}
+.why-intro strong{color:rgba(255,255,255,0.6);font-weight:500;}
+.why-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+@media(max-width:700px){.why-cols{grid-template-columns:1fr;}}
+.why-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:24px;text-align:left;position:relative;overflow:hidden;}
+.why-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--wc);}
+.why-card-flag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--wc);font-weight:600;margin-bottom:10px;}
+.why-card-body{font-size:11px;font-weight:300;color:rgba(255,255,255,0.35);line-height:2;}
+.why-card-body strong{color:rgba(255,255,255,0.6);font-weight:500;}
+.why-card-stat{margin-top:14px;display:flex;gap:20px;}
+.why-card-stat span{font-size:9px;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:1px;}
+.why-card-stat strong{display:block;font-size:18px;font-weight:700;color:var(--wc);margin-bottom:2px;font-variant-numeric:tabular-nums;}
+.why-takeaway{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.05);padding:20px 24px;text-align:left;position:relative;overflow:hidden;}
+.why-takeaway::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(238,51,0,0.3),rgba(44,204,0,0.3),transparent);}
+.why-takeaway-title{font-size:11px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:10px;letter-spacing:0.3px;}
+.why-takeaway-body{font-size:11px;color:rgba(255,255,255,0.3);line-height:2;font-weight:300;}
+.why-takeaway-body strong{color:rgba(255,255,255,0.55);font-weight:500;}
+
 /* --- Classification --- */
 .class-panel .panel-content{max-width:900px;}
 .cls-label{text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(204,221,0,0.5);margin-bottom:20px;font-weight:600;}
@@ -211,11 +233,11 @@ html,body{
 .sim-launch-arrow{position:absolute;top:20px;right:24px;font-size:16px;color:rgba(255,255,255,0.2);transition:all 0.4s;opacity:0.5;}
 
 /* Selectable cards — hover highlight */
-.cls-card,.dat-field,.dat-connect,.dat-tooltip-mock{
+.cls-card,.dat-field,.dat-connect,.dat-tooltip-mock,.why-card,.why-takeaway{
   cursor:pointer;
   transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
 }
-.cls-card:hover,.dat-field:hover,.dat-connect:hover,.dat-tooltip-mock:hover{
+.cls-card:hover,.dat-field:hover,.dat-connect:hover,.dat-tooltip-mock:hover,.why-card:hover,.why-takeaway:hover{
   background:rgba(255,255,255,0.06);
   border-color:rgba(255,255,255,0.18);
   transform:translateY(-2px);
@@ -306,8 +328,39 @@ html,body{
     </div>
   </div>
 
-  <!-- Panel 1: Classification -->
-  <div class="panel class-panel" data-idx="1">
+  <!-- Panel 1: Why These Countries -->
+  <div class="panel why-panel" data-idx="1">
+    <div class="panel-content">
+      <div class="why-label">Project Context</div>
+      <div class="why-title">Why the Philippines &amp; Vietnam?</div>
+      <p class="why-intro">This project is a <strong>data visualisation</strong> comparing how typhoons affect two countries that sit in the same storm path. Both get hit by a similar number of storms every year &mdash; but the outcomes are very different. The data tells a story not just about weather, but about <strong>how governments choose to protect their people</strong>.</p>
+      <div class="why-cols">
+        <div class="why-card" style="--wc:#ee3300;">
+          <div class="why-card-flag">Philippines</div>
+          <div class="why-card-body">Sits directly in the main typhoon corridor and gets battered year after year. Despite this, decades of <strong>government corruption</strong> have meant very little money goes into <strong>flood defences, early warning systems, or evacuation infrastructure</strong>. The result: a much <strong>higher death toll</strong> compared to countries facing the same storms.</div>
+          <div class="why-card-stat">
+            <span><strong>~20</strong>storms/year</span>
+            <span><strong>Higher</strong>death toll</span>
+          </div>
+        </div>
+        <div class="why-card" style="--wc:#44cc00;">
+          <div class="why-card-flag">Vietnam</div>
+          <div class="why-card-body">Faces a similar number of typhoons, and storms often weaken slightly crossing the South China Sea before landfall. Vietnam has invested more in <strong>disaster preparedness</strong> &mdash; dyke systems, mangrove restoration, and community-level evacuation plans &mdash; leading to <strong>fewer deaths</strong> from comparable storms.</div>
+          <div class="why-card-stat">
+            <span><strong>~15</strong>storms/year</span>
+            <span><strong>Lower</strong>death toll</span>
+          </div>
+        </div>
+      </div>
+      <div class="why-takeaway">
+        <div class="why-takeaway-title">What This Data Shows</div>
+        <div class="why-takeaway-body">When you explore the simulation, you'll see that both countries face <strong>roughly the same level of storm activity</strong>. The difference in impact isn't about the weather &mdash; it's about <strong>preparation and investment</strong>. The Philippines consistently suffers more casualties because funds that should go to disaster prevention are lost to <strong>corruption and mismanagement</strong>. This project uses data to make that gap visible.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 2: Classification -->
+  <div class="panel class-panel" data-idx="2">
     <div class="panel-content">
       <div class="cls-label">Classification</div>
       <div class="cls-title">Storm Classification Guide</div>
@@ -338,7 +391,7 @@ html,body{
   </div>
 
   <!-- Panel 2: Reading the Data -->
-  <div class="panel data-panel" data-idx="2">
+  <div class="panel data-panel" data-idx="3">
     <div class="panel-content">
       <div class="dat-label">Understanding the Data</div>
       <div class="dat-title">Reading a Storm Record</div>
@@ -388,7 +441,7 @@ html,body{
   </div>
 
   <!-- Panel 3: Simulations -->
-  <div class="panel sim-panel" data-idx="3">
+  <div class="panel sim-panel" data-idx="4">
     <div class="panel-content">
       <div class="sim-label">Simulations</div>
       <div class="sim-title">Launch a Simulation</div>
@@ -564,7 +617,7 @@ html,body{
   const hero = document.getElementById('hero');
   const panels = document.querySelectorAll('.panel');
   const navEl = document.getElementById('nav');
-  const panelNames = ['Title', 'Dataset', 'Classification', 'Reading the Data', 'Simulations'];
+  const panelNames = ['Title', 'Dataset', 'Why These Countries', 'Classification', 'Reading the Data', 'Simulations'];
   let current = -1;
   let transitioning = false;
 
@@ -686,6 +739,26 @@ html,body{
   zoomClose.addEventListener('click', closeZoom);
   zoomOverlay.addEventListener('click', (e) => { if (e.target === zoomOverlay) closeZoom(); });
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeZoom(); });
+
+  // Why country cards
+  document.querySelectorAll('.why-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const flag = card.querySelector('.why-card-flag').textContent;
+      const body = card.querySelector('.why-card-body').innerHTML;
+      const color = getComputedStyle(card).getPropertyValue('--wc').trim();
+      openZoom(flag, 'Why This Country', color, body);
+    });
+  });
+
+  // Why takeaway box
+  const whyTakeaway = document.querySelector('.why-takeaway');
+  if (whyTakeaway) {
+    whyTakeaway.addEventListener('click', () => {
+      const title = whyTakeaway.querySelector('.why-takeaway-title').textContent;
+      const body = whyTakeaway.querySelector('.why-takeaway-body').innerHTML;
+      openZoom(title, 'Project Context', '#dd2200', body);
+    });
+  }
 
   // Classification cards
   document.querySelectorAll('.cls-card').forEach(card => {
