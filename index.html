@@ -82,6 +82,12 @@ html,body{
   margin-top:20px;
   transition:opacity 0.6s 0.1s, transform 0.6s 0.1s;
 }
+.hero-author{
+  font-size:12px;font-weight:400;letter-spacing:1px;
+  color:rgba(255,255,255,0.35);
+  margin-top:16px;
+  transition:opacity 0.6s 0.1s, transform 0.6s 0.1s;
+}
 .hero-scroll{
   margin-top:40px;
   font-size:10px;letter-spacing:2px;text-transform:uppercase;
@@ -185,22 +191,24 @@ html,body{
 .sim-panel .panel-content{max-width:900px;}
 .sim-label{text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(0,119,221,0.5);margin-bottom:20px;font-weight:600;}
 .sim-title{text-align:center;font-size:24px;font-weight:600;letter-spacing:-0.5px;margin-bottom:32px;color:rgba(255,255,255,0.85);}
-.sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-@media(max-width:800px){.sim-grid{grid-template-columns:1fr;}}
-.sim-card{position:relative;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);padding:28px 24px;text-decoration:none;color:inherit;display:block;overflow:hidden;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);}
-.sim-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity 0.4s;}
-.sim-card:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.15);transform:translateY(-4px);}
-.sim-card:hover::before{opacity:1;}
-.sim-card:hover .sim-arrow{transform:translate(3px,-3px);opacity:1;}
-.sim-icon{font-size:20px;margin-bottom:20px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px;transition:transform 0.4s;}
-.sim-card:hover .sim-icon{transform:scale(1.1);}
-.sim-card-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;font-weight:500;}
-.sim-card-title{font-size:18px;font-weight:600;margin-bottom:8px;letter-spacing:-0.5px;}
-.sim-card-desc{font-size:11px;font-weight:300;color:rgba(255,255,255,0.35);line-height:1.7;margin-bottom:16px;}
-.sim-card-stats{display:flex;gap:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);}
-.sim-card-stat{font-size:9px;color:rgba(255,255,255,0.25);}
-.sim-card-stat strong{display:block;font-size:16px;font-weight:600;color:rgba(255,255,255,0.75);margin-bottom:2px;font-variant-numeric:tabular-nums;}
-.sim-arrow{position:absolute;top:24px;right:24px;font-size:14px;color:rgba(255,255,255,0.15);transition:all 0.4s;opacity:0.4;}
+.sim-single{max-width:600px;margin:0 auto;}
+.sim-launch-btn{
+  position:relative;display:flex;align-items:center;gap:24px;
+  background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.1);
+  padding:32px 36px;text-decoration:none;color:inherit;
+  overflow:hidden;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.sim-launch-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity 0.4s;}
+.sim-launch-btn:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.2);transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,0.3);}
+.sim-launch-btn:hover::before{opacity:1;}
+.sim-launch-btn:hover .sim-launch-arrow{transform:translate(3px,-3px);opacity:1;}
+.sim-launch-icon{font-size:32px;flex-shrink:0;}
+.sim-launch-text{flex:1;}
+.sim-launch-name{font-size:20px;font-weight:600;letter-spacing:-0.5px;margin-bottom:6px;}
+.sim-launch-desc{font-size:11px;font-weight:300;color:rgba(255,255,255,0.35);line-height:1.7;}
+.sim-launch-stats{display:flex;gap:16px;flex-shrink:0;font-size:9px;color:rgba(255,255,255,0.25);}
+.sim-launch-stats strong{color:rgba(255,255,255,0.7);font-weight:600;}
+.sim-launch-arrow{position:absolute;top:20px;right:24px;font-size:16px;color:rgba(255,255,255,0.2);transition:all 0.4s;opacity:0.5;}
 
 /* Selectable cards — hover highlight */
 .cls-card,.dat-field,.dat-connect,.dat-tooltip-mock{
@@ -276,6 +284,7 @@ html,body{
   <div class="hero-tag">Data Observatory v1.0</div>
   <div class="hero-title">STORM<br>TRACKING</div>
   <p class="hero-sub">Explore 73 years of typhoon data on a 3D globe. See where storms hit, how strong they were, and how they moved across the Philippines and Vietnam.</p>
+  <div class="hero-author">by Mark Spencer Saymo</div>
   <div class="hero-scroll">Scroll to explore</div>
 </div>
 
@@ -383,40 +392,19 @@ html,body{
     <div class="panel-content">
       <div class="sim-label">Simulations</div>
       <div class="sim-title">Launch a Simulation</div>
-      <div class="sim-grid">
-        <a href="typhoon_simulation.html" class="sim-card" style="--accent:#dd2200;">
-          <div class="sim-arrow">&nearr;</div>
-          <div class="sim-icon" style="color:#dd2200;">&#x1F300;</div>
-          <div class="sim-card-label">Simulation 01</div>
-          <div class="sim-card-title">Typhoon Tracker</div>
-          <div class="sim-card-desc">3D globe visualization of typhoon tracks across the Philippines and Vietnam from 1951 to 2023.</div>
-          <div class="sim-card-stats">
-            <div class="sim-card-stat"><strong>1,313</strong>records</div>
-            <div class="sim-card-stat"><strong>73</strong>years</div>
-            <div class="sim-card-stat"><strong>2</strong>countries</div>
+      <div class="sim-single">
+        <a href="typhoon_simulation.html" class="sim-launch-btn" style="--accent:#dd2200;">
+          <span class="sim-launch-icon">&#x1F300;</span>
+          <div class="sim-launch-text">
+            <div class="sim-launch-name">Typhoon Tracker</div>
+            <div class="sim-launch-desc">3D globe visualization of typhoon tracks across the Philippines and Vietnam from 1951 to 2023.</div>
           </div>
-        </a>
-        <a href="typhoon_simulation.html?country=PH" class="sim-card" style="--accent:#ee3300;">
-          <div class="sim-arrow">&nearr;</div>
-          <div class="sim-icon" style="color:#ee3300;">&#x1F1F5;&#x1F1ED;</div>
-          <div class="sim-card-label">Comparison</div>
-          <div class="sim-card-title">Philippines</div>
-          <div class="sim-card-desc">The most typhoon-hit country on Earth. Sits right in the main storm path with over 20 landfalls per year on average.</div>
-          <div class="sim-card-stats">
-            <div class="sim-card-stat"><strong>~800</strong>storms</div>
-            <div class="sim-card-stat"><strong>Peak</strong>Jul–Nov</div>
+          <div class="sim-launch-stats">
+            <span><strong>1,313</strong> records</span>
+            <span><strong>73</strong> years</span>
+            <span><strong>2</strong> countries</span>
           </div>
-        </a>
-        <a href="typhoon_simulation.html?country=VN" class="sim-card" style="--accent:#44cc00;">
-          <div class="sim-arrow">&nearr;</div>
-          <div class="sim-icon" style="color:#44cc00;">&#x1F1FB;&#x1F1F3;</div>
-          <div class="sim-card-label">Comparison</div>
-          <div class="sim-card-title">Vietnam</div>
-          <div class="sim-card-desc">Storms weaken crossing the South China Sea but still cause massive flooding along Vietnam's long, narrow coastline.</div>
-          <div class="sim-card-stats">
-            <div class="sim-card-stat"><strong>~500</strong>storms</div>
-            <div class="sim-card-stat"><strong>Peak</strong>Sep–Nov</div>
-          </div>
+          <div class="sim-launch-arrow">&nearr;</div>
         </a>
       </div>
     </div>
